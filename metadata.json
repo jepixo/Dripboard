@@ -1,0 +1,5 @@
+{
+  "name": "Dripboard",
+  "description": "A virtual try-on application that allows you to create and visualize outfits on your own avatar using AI. Upload your clothes, create a look, and let Gemini generate the final image.",
+  "requestFramePermissions": []
+}
