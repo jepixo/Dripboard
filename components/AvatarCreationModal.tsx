@@ -22,6 +22,8 @@ const fileToDataUrl = (file: File): Promise<string> => {
 
 export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, onClose, onComplete }) => {
   const [name, setName] = useState('');
+  const [chest, setChest] = useState('');
+  const [waist, setWaist] = useState('');
   const [sourceImageDataUrl, setSourceImageDataUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingText, setProcessingText] = useState('');
@@ -63,6 +65,8 @@ export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, 
         id: `avatar-${Date.now()}`,
         name: name.trim(),
         imageDataUrl: finalImageDataUrl,
+        chest: chest ? parseFloat(chest) : undefined,
+        waist: waist ? parseFloat(waist) : undefined,
       };
 
       await storageService.addAvatar(newAvatar);
@@ -71,9 +75,14 @@ export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, 
         onComplete(newAvatar);
       }
 
-    } catch (e: any) {
+    } catch (e) {
         if(isComponentMounted.current) {
-            setError(e.message || 'An unexpected error occurred.');
+            // FIX: The caught error `e` is of type `unknown`. We must check if it's an instance of `Error` before accessing `e.message` to avoid runtime errors.
+            if (e instanceof Error) {
+                setError(e.message);
+            } else {
+                setError('An unexpected error occurred.');
+            }
         }
     } finally {
         if(isComponentMounted.current) {
@@ -83,18 +92,18 @@ export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
-      <div className="bg-brand-surface rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
-        <h3 className="text-2xl font-bold mb-4 text-brand-text-primary">Create New Avatar</h3>
+    <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+      <div className="bg-panel rounded-lg p-6 w-full max-w-md shadow-2xl relative">
+        <h3 className="text-2xl font-bold mb-4 text-text-primary">Create New Avatar</h3>
         
         {isProcessing && (
-            <div className="absolute inset-0 bg-white bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-10 rounded-2xl">
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-lg">
                 <Loader text={processingText} />
             </div>
         )}
 
         <div className="space-y-4">
-            <div className="aspect-w-3 aspect-h-4 bg-gray-100 rounded-xl flex items-center justify-center overflow-hidden">
+            <div className="aspect-w-3 aspect-h-4 bg-bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
                 {sourceImageDataUrl ? (
                     <img src={sourceImageDataUrl} alt="Avatar preview" className="max-h-[40vh] object-contain"/>
                 ) : (
@@ -102,29 +111,57 @@ export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, 
                 )}
             </div>
             
-            {error && <div className="text-red-700 text-center bg-red-100 p-2 rounded-lg text-sm">{error}</div>}
+            {error && <div className="text-red-700 text-center bg-red-100 p-2 rounded-md text-sm">{error}</div>}
 
-            <div>
-                <label htmlFor="avatar-name-modal" className="block text-sm font-medium text-brand-text-secondary mb-1">Avatar Name</label>
-                <input
-                    ref={inputRef}
-                    id="avatar-name-modal"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="block w-full bg-gray-100 border-gray-300 rounded-lg shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-brand-text-primary"
-                    disabled={isProcessing}
-                />
+            <div className="space-y-3">
+                <div>
+                    <label htmlFor="avatar-name-modal" className="block text-sm font-medium text-text-secondary mb-1">Avatar Name</label>
+                    <input
+                        ref={inputRef}
+                        id="avatar-name-modal"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="block w-full bg-bg-secondary border-border-color rounded-md shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-text-primary"
+                        disabled={isProcessing}
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label htmlFor="avatar-chest-modal" className="block text-sm font-medium text-text-secondary mb-1">Chest Size (in.)</label>
+                        <input
+                            id="avatar-chest-modal"
+                            type="number"
+                            value={chest}
+                            placeholder="e.g., 40"
+                            onChange={(e) => setChest(e.target.value)}
+                            className="block w-full bg-bg-secondary border-border-color rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-text-primary"
+                            disabled={isProcessing}
+                        />
+                    </div>
+                     <div>
+                        <label htmlFor="avatar-waist-modal" className="block text-sm font-medium text-text-secondary mb-1">Waist Size (in.)</label>
+                        <input
+                            id="avatar-waist-modal"
+                            type="number"
+                            value={waist}
+                            placeholder="e.g., 32"
+                            onChange={(e) => setWaist(e.target.value)}
+                            className="block w-full bg-bg-secondary border-border-color rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-brand-primary text-text-primary"
+                            disabled={isProcessing}
+                        />
+                    </div>
+                </div>
             </div>
             
-            <p className="text-sm text-brand-text-secondary text-center p-2 bg-gray-50 rounded-lg">Is this a good, full-body photo? Use it directly. Otherwise, generate a standardized avatar for best results.</p>
+            <p className="text-sm text-text-secondary text-center p-2 bg-bg-secondary rounded-md">Is this a good, full-body photo? Use it directly. Otherwise, generate a standardized avatar for best results.</p>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <button onClick={() => handleSave(false)} disabled={isProcessing || !name.trim()} className="w-full bg-gray-200 hover:bg-gray-300 text-brand-text-primary font-bold py-3 px-4 rounded-xl inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                 <button onClick={() => handleSave(false)} disabled={isProcessing || !name.trim()} className="w-full bg-bg-secondary hover:bg-border-color text-text-primary font-bold py-3 px-4 rounded-md inline-flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <SaveIcon className="h-5 w-5"/>
                     Use Directly
                 </button>
-                <button onClick={() => handleSave(true)} disabled={isProcessing || !name.trim()} className="w-full bg-brand-primary hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl inline-flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed transform hover:-translate-y-0.5">
+                <button onClick={() => handleSave(true)} disabled={isProcessing || !name.trim()} className="w-full bg-brand-primary hover:bg-brand-secondary text-text-on-dark font-bold py-3 px-4 rounded-md inline-flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg disabled:bg-gray-400 disabled:shadow-none disabled:cursor-not-allowed transform hover:-translate-y-0.5">
                     <SparklesIcon className="h-5 w-5"/>
                     Generate & Save
                 </button>
@@ -132,7 +169,7 @@ export const AvatarCreationModal: React.FC<AvatarCreationModalProps> = ({ file, 
         </div>
 
         <div className="mt-4 text-center">
-             <button onClick={onClose} className="text-brand-text-secondary hover:text-brand-text-primary text-sm font-semibold" disabled={isProcessing}>
+             <button onClick={onClose} className="text-text-secondary hover:text-text-primary text-sm font-semibold" disabled={isProcessing}>
                 Cancel
              </button>
         </div>

@@ -1,9 +1,9 @@
 import type { User, Avatar, ClothingItem, Outfit } from '../types';
 
 // User data is small, so it can remain in localStorage for simplicity.
-const USER_KEY = 'dripolar_user';
+const USER_KEY = 'dripboard_user';
 
-const DB_NAME = 'DripolarDB';
+const DB_NAME = 'DripboardDB';
 const DB_VERSION = 1;
 const STORES = {
   avatars: 'avatars',
