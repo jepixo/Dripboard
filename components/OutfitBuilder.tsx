@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import type { Avatar, ClothingItem, Outfit, SizeSystem, AlphaSize, NumericSize, UKShoeSize } from '../types';
 import { ClothingCategory, CLOTHING_CATEGORIES } from '../types';
@@ -103,6 +104,7 @@ export function OutfitBuilder({ avatars, clothing, outfits, onDataChange, storag
   const [isSavingOutfit, setIsSavingOutfit] = useState(false);
   const [outfitError, setOutfitError] = useState<string | null>(null);
   const [additionalPrompt, setAdditionalPrompt] = useState('');
+  const [selectedGenerationModel, setSelectedGenerationModel] = useState<'gemini-2.5-flash-image' | 'gemini-2.0-flash-preview-image-generation'>('gemini-2.5-flash-image');
   const [outfitForSaving, setOutfitForSaving] = useState<Partial<Record<ClothingCategory, ClothingItem[]>> | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   
@@ -253,7 +255,7 @@ export function OutfitBuilder({ avatars, clothing, outfits, onDataChange, storag
 
     try {
       const outfitToGenerate = JSON.parse(JSON.stringify(currentOutfit));
-      const imageUrl = await geminiService.generateOutfitImage(selectedAvatar, outfitToGenerate, additionalPrompt);
+      const imageUrl = await geminiService.generateOutfitImage(selectedAvatar, outfitToGenerate, additionalPrompt, selectedGenerationModel);
       setGeneratedImage(imageUrl);
       setOutfitForSaving(outfitToGenerate);
     } catch (e) {
@@ -395,6 +397,21 @@ export function OutfitBuilder({ avatars, clothing, outfits, onDataChange, storag
         
         {/* Sticky Bottom Controls */}
         <div className="flex-shrink-0 flex flex-col gap-4 pt-4 mt-4 border-t border-border-color">
+            <div className={`${!selectedAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
+                <label htmlFor="generation-model" className="block text-sm font-medium text-text-secondary">
+                    Generation Model
+                </label>
+                <select
+                    id="generation-model"
+                    value={selectedGenerationModel}
+                    onChange={(e) => setSelectedGenerationModel(e.target.value as 'gemini-2.5-flash-image' | 'gemini-2.0-flash-preview-image-generation')}
+                    className="mt-1 block w-full bg-bg-secondary border-border-color rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                    disabled={isLoading}
+                >
+                    <option value="gemini-2.5-flash-image">2.5-flash-image</option>
+                    <option value="gemini-2.0-flash-preview-image-generation">gemini-2.0-flash-preview-image-generation</option>
+                </select>
+            </div>
             <div className={`${!selectedAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
                 <label htmlFor="additional-prompt" className="block text-sm font-medium text-text-secondary">
                     Additional Instructions <span className="text-text-secondary/80">(Optional)</span>
@@ -577,6 +594,21 @@ export function OutfitBuilder({ avatars, clothing, outfits, onDataChange, storag
                 </div>
                 
                 <div className={`mt-6 transition-opacity ${!selectedAvatar ? 'opacity-50 pointer-events-none' : ''}`}>
+                    <div className="mb-4">
+                        <label htmlFor="generation-model-mobile" className="block text-sm font-medium text-text-secondary">
+                            Generation Model
+                        </label>
+                        <select
+                            id="generation-model-mobile"
+                            value={selectedGenerationModel}
+                            onChange={(e) => setSelectedGenerationModel(e.target.value as 'gemini-2.5-flash-image' | 'gemini-2.0-flash-preview-image-generation')}
+                            className="mt-1 block w-full bg-bg-secondary border-border-color rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-brand-primary"
+                            disabled={isLoading}
+                        >
+                            <option value="gemini-2.5-flash-image">2.5-flash-image</option>
+                            <option value="gemini-2.0-flash-preview-image-generation">gemini-2.0-flash-preview-image-generation</option>
+                        </select>
+                    </div>
                     <div>
                         <label htmlFor="additional-prompt-mobile" className="block text-sm font-medium text-text-secondary">
                             Additional Instructions <span className="text-text-secondary/80">(Optional)</span>

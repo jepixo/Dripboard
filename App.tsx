@@ -4,20 +4,12 @@ import { Wardrobe } from './components/Wardrobe';
 import { OutfitBuilder } from './components/OutfitBuilder';
 import { Looks } from './components/Looks';
 import { LoginScreen } from './components/LoginScreen';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import { storageService } from './services/storageService';
 import type { User, Avatar, ClothingItem, Outfit } from './types';
 import { DripboardLogo, AvatarBuilderIcon, WardrobeIcon, LooksIcon, MoreIcon, WardrobeMobileIcon } from './components/Icons';
 
-// FIX: Moved AIStudio interface into `declare global` to resolve "Subsequent property declarations must have the same type" error.
-declare global {
-  interface AIStudio {
-    openSelectKey: () => Promise<void>;
-    hasSelectedApiKey: () => Promise<boolean>;
-  }
-  interface Window {
-    aistudio?: AIStudio;
-  }
-}
+// This app is not designed for the AI Studio environment, so the AIStudio interface is removed.
 
 const MoreMenu: React.FC<{ onLogout: () => void, onChangeApiKey: () => void, className?: string, iconClassName?: string, menuPosition?: string }> = ({ onLogout, onChangeApiKey, className, iconClassName, menuPosition = 'top' }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -86,12 +78,21 @@ const MoreMenu: React.FC<{ onLogout: () => void, onChangeApiKey: () => void, cla
 
 export default function App() {
   const [user, setUser] = useState<User | null>(() => storageService.getUser());
+  const [apiKey, setApiKey] = useState<string | null>(() => storageService.getApiKey());
   const [avatars, setAvatars] = useState<Avatar[]>([]);
   const [clothing, setClothing] = useState<ClothingItem[]>([]);
   const [outfits, setOutfits] = useState<Outfit[]>([]);
   const [showWardrobe, setShowWardrobe] = useState(false);
   const [showLooks, setShowLooks] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // If the user is logged in but there's no API key, prompt them to enter one.
+    if (user && !apiKey) {
+        setShowApiKeyModal(true);
+    }
+  }, [user, apiKey]);
 
   useEffect(() => {
     if (!storageService.isStorageAvailable()) {
@@ -141,15 +142,19 @@ export default function App() {
   
   const handleLogout = () => {
     storageService.removeUser();
+    storageService.removeApiKey(); // Also clear the API key on logout
     setUser(null);
+    setApiKey(null);
   };
 
-  const handleChangeApiKey = async () => {
-    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
-        await window.aistudio.openSelectKey();
-    } else {
-        alert('API Key selection feature is not available in this environment.');
-    }
+  const handleChangeApiKey = () => {
+    setShowApiKeyModal(true);
+  };
+  
+  const handleSaveApiKey = (newKey: string) => {
+    storageService.saveApiKey(newKey);
+    setApiKey(newKey);
+    setShowApiKeyModal(false);
   };
   
   if (!user) {
@@ -263,7 +268,13 @@ export default function App() {
             </main>
           </div>
       </div>
-
+      
+      {showApiKeyModal && (
+        <ApiKeyModal
+            onSave={handleSaveApiKey}
+            onClose={apiKey ? () => setShowApiKeyModal(false) : undefined}
+        />
+      )}
     </div>
   );
 }

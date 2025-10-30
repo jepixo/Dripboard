@@ -1,13 +1,16 @@
+
 import { GoogleGenAI, Modality, Type } from "@google/genai";
 import { type Avatar, type ClothingItem, type AlphaSize, ClothingCategory, CLOTHING_CATEGORIES } from '../types';
+import { storageService } from './storageService';
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const getAiClient = () => {
+    const apiKey = storageService.getApiKey();
+    if (!apiKey) {
+      throw new Error("Gemini API Key not found. Please add your key via the 'More' menu.");
+    }
+    // Return a new instance each time. This ensures the latest key is always used.
+    return new GoogleGenAI({ apiKey });
+};
 
 const fileToGenerativePart = async (imageDataUrl: string) => {
     const base64Data = imageDataUrl.split(',')[1];
@@ -72,8 +75,10 @@ const getFitNote = (avatar: Avatar, item: ClothingItem): string => {
 const _generateSingleStep = async (
     avatar: Avatar,
     outfitItems: Partial<Record<ClothingCategory, ClothingItem[]>>,
-    additionalPrompt: string
+    additionalPrompt: string,
+    model: string
 ): Promise<string> => {
+    const ai = getAiClient();
     const parts: any[] = [];
     
     parts.push(await fileToGenerativePart(avatar.imageDataUrl));
@@ -143,18 +148,25 @@ ${userInstructions}
     
     parts.push({ text: prompt });
 
+    const generateContentConfig: { responseModalities: Modality[] } = {
+        responseModalities: [Modality.IMAGE],
+    };
+
+    if (model === 'gemini-2.0-flash-preview-image-generation') {
+        generateContentConfig.responseModalities.push(Modality.TEXT);
+    }
+
     const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-image',
+        model,
         contents: { parts },
-        config: {
-            responseModalities: [Modality.IMAGE],
-        },
+        config: generateContentConfig,
     });
 
-    const firstPart = response.candidates?.[0]?.content?.parts?.[0];
-    if (firstPart && firstPart.inlineData) {
-        const base64ImageBytes: string = firstPart.inlineData.data;
-        const mimeType = firstPart.inlineData.mimeType;
+    const imagePart = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);
+    
+    if (imagePart && imagePart.inlineData) {
+        const base64ImageBytes: string = imagePart.inlineData.data;
+        const mimeType = imagePart.inlineData.mimeType;
         return `data:${mimeType};base64,${base64ImageBytes}`;
     }
 
@@ -163,6 +175,7 @@ ${userInstructions}
 
 export const geminiService = {
     createFullBodyAvatar: async (sourceImageDataUrl: string): Promise<string> => {
+        const ai = getAiClient();
         try {
             const imagePart = await fileToGenerativePart(sourceImageDataUrl);
             const prompt = `From the provided image of a person, create a photorealistic, full-body image of them. The person should be standing still in a neutral, forward-facing pose, as if for a virtual clothing fitting. Place them against a simple, well-lit, light-gray studio background. Ensure the entire body from head to toe is visible. The final image should be just the person on the background, without any additional text, logos, or objects. The final image must be a square (1:1 aspect ratio).`;
@@ -194,7 +207,8 @@ export const geminiService = {
     generateOutfitImage: async (
         avatar: Avatar,
         outfitItems: Partial<Record<ClothingCategory, ClothingItem[]>>,
-        additionalPrompt: string
+        additionalPrompt: string,
+        model: string
     ): Promise<string> => {
         try {
             const faceItemCategories = [ClothingCategory.HEADWEAR, ClothingCategory.EYEWEAR];
@@ -221,7 +235,7 @@ export const geminiService = {
             // If there are both face items and body items, use a two-step process.
             if (hasFaceItems && hasBodyItems) {
                 // Step 1: Generate image with only the face items to preserve the face.
-                const intermediateImageUrl = await _generateSingleStep(avatar, faceItems, '');
+                const intermediateImageUrl = await _generateSingleStep(avatar, faceItems, '', model);
 
                 // Create a temporary avatar object using the result of the first step.
                 const intermediateAvatar: Avatar = {
@@ -230,12 +244,12 @@ export const geminiService = {
                 };
                 
                 // Step 2: Use the new image to generate the final outfit with the body items.
-                const finalImageUrl = await _generateSingleStep(intermediateAvatar, bodyItems, additionalPrompt);
+                const finalImageUrl = await _generateSingleStep(intermediateAvatar, bodyItems, additionalPrompt, model);
                 
                 return finalImageUrl;
             } else {
                 // Otherwise, use the standard single-step generation.
-                return await _generateSingleStep(avatar, outfitItems, additionalPrompt);
+                return await _generateSingleStep(avatar, outfitItems, additionalPrompt, model);
             }
         } catch (error) {
             console.error("Error generating outfit image with Gemini:", error);
@@ -249,6 +263,7 @@ export const geminiService = {
         userDescription: string,
         shouldProcess: boolean
     ): Promise<{ imageDataUrl: string; analysis: { colors: string[]; fabrics: string[]; patterns: string[]; styles: string[] } }> => {
+        const ai = getAiClient();
         try {
             let imageDataUrlForAnalysis = sourceImageDataUrl;
             let finalImageDataUrl = sourceImageDataUrl;

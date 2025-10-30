@@ -1,7 +1,9 @@
+
 import type { User, Avatar, ClothingItem, Outfit } from '../types';
 
 // User data is small, so it can remain in localStorage for simplicity.
 const USER_KEY = 'dripboard_user';
+const API_KEY_LOCALSTORAGE_KEY = 'dripboard_api_key';
 
 const DB_NAME = 'DripboardDB';
 const DB_VERSION = 1;
@@ -122,6 +124,30 @@ export const storageService = {
       localStorage.removeItem(USER_KEY);
     } catch (e) {
       console.error("Could not remove user from localStorage", e);
+    }
+  },
+
+  // API Key (localStorage)
+  saveApiKey: (key: string): void => {
+    try {
+        localStorage.setItem(API_KEY_LOCALSTORAGE_KEY, key);
+    } catch (e) {
+        console.error("Could not save API key to localStorage", e);
+    }
+  },
+  getApiKey: (): string | null => {
+    try {
+        return localStorage.getItem(API_KEY_LOCALSTORAGE_KEY);
+    } catch(e) {
+        console.error("Could not read API key from localStorage", e);
+        return null;
+    }
+  },
+  removeApiKey: (): void => {
+    try {
+      localStorage.removeItem(API_KEY_LOCALSTORAGE_KEY);
+    } catch (e) {
+      console.error("Could not remove API key from localStorage", e);
     }
   },
 
