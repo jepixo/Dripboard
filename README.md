@@ -1,8 +1,6 @@
 # Dripboard
 
-Dripboard is a cutting-edge virtual try-on application that lets you curate and visualize outfits on a personalized AI-generated avatar. Upload images of your clothes, build looks with an intuitive interface, and let the Google Gemini API generate a photorealistic image of you wearing your new outfit.
-
-![Dripboard Screenshot](https://storage.googleapis.com/aistudio-marketplace/project_madison_pro/Dripboard_Screenshot.png)
+[Dripboard](https://jepixo.github.io/Dripboard/) is a cutting-edge virtual try-on application that lets you curate and visualize outfits on a personalized AI-generated avatar. Upload images of your clothes, build looks with an intuitive interface, and let the Google Gemini API generate a photorealistic image of you wearing your new outfit.
 
 ## ✨ Features
 

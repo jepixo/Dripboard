@@ -97,6 +97,17 @@ const writeAll = async <T>(storeName: string, data: T[]): Promise<void> => {
     });
 };
 
+const deleteItem = async (storeName: string, id: string): Promise<void> => {
+  const db = await getDb();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, 'readwrite');
+    const store = transaction.objectStore(storeName);
+    const request = store.delete(id);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error);
+  });
+};
+
 export const storageService = {
   isStorageAvailable: () => {
     return !!window.indexedDB;
@@ -169,4 +180,6 @@ export const storageService = {
     outfits.unshift(outfit); // Add to the beginning
     await storageService.saveOutfits(outfits);
   },
+  updateOutfit: (outfit: Outfit): Promise<void> => write<Outfit>(STORES.outfits, outfit),
+  deleteOutfit: (id: string): Promise<void> => deleteItem(STORES.outfits, id),
 };

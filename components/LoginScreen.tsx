@@ -11,7 +11,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-bg-primary p-4">
       <div className="w-full max-w-sm text-center">
-        <DripboardLogo className="h-20 w-20 text-brand-primary mx-auto mb-6" />
+        <DripboardLogo className="w-20 text-brand-primary mx-auto mb-6" />
         <h1 className="text-4xl font-bold text-text-primary mb-2">Dripboard</h1>
         <p className="text-text-secondary text-lg mb-8">Your AI-powered virtual closet.</p>
 

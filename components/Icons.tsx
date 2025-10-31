@@ -1,11 +1,8 @@
 
 import React from 'react';
 
-export const DripboardLogo: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg {...props} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="24" height="24" fill="currentColor" />
-    <path d="M6 5.5V18.5H11.5C14.8137 18.5 17.5 15.8137 17.5 12.5C17.5 9.18629 14.8137 6.5 11.5 6.5H9.5M6 5.5H9.5M6 5.5L9.5 5.5M9.5 6.5V17.5M9.5 6.5L6 5.5M15 16.5L18.5 5.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+export const DripboardLogo: React.FC<React.ImgHTMLAttributes<HTMLImageElement>> = ({ className, ...props }) => (
+  <img src="dripboard.png" alt="Dripboard Logo" className={`${className || ''}`} {...props} />
 );
 
 

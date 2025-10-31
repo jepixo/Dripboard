@@ -27,7 +27,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ onSave, onClose }) => 
       <div className="bg-panel rounded-lg p-6 w-full max-w-sm shadow-2xl text-center border border-border-color">
         {onClose && (
             <div className="text-center mb-4">
-                <DripboardLogo className="h-12 w-12 text-brand-primary mx-auto" />
+                <DripboardLogo className="w-12 text-brand-primary mx-auto" />
             </div>
         )}
         <h3 className="text-xl font-bold mb-2 text-text-primary">Enter Your Gemini API Key</h3>

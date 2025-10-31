@@ -51,8 +51,9 @@ export interface ClothingItem extends StoredItem {
 export interface Outfit {
   id: string;
   name: string;
-  avatarId: string;
-  items: Partial<Record<ClothingCategory, ClothingItem[]>>;
-  generatedImageUrl: string;
+  imageUrl: string;
   createdAt: string;
+  type: 'generated' | 'custom';
+  avatarId?: string;
+  items?: Partial<Record<ClothingCategory, ClothingItem[]>>;
 }

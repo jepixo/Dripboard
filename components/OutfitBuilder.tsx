@@ -280,8 +280,9 @@ export function OutfitBuilder({ avatars, clothing, outfits, onDataChange, storag
             name,
             avatarId: selectedAvatar.id,
             items: outfitForSaving,
-            generatedImageUrl: generatedImage,
+            imageUrl: generatedImage,
             createdAt: new Date().toISOString(),
+            type: 'generated',
         };
         await storageService.addOutfit(newOutfit);
         onDataChange();

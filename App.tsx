@@ -184,7 +184,7 @@ export default function App() {
        <nav className="hidden lg:flex flex-col w-24 bg-bg-primary border-r border-border-color py-6 px-2 items-center justify-between">
         {/* Top section with logo */}
         <button onClick={handleLogout} className="p-2" title="Go to login">
-          <DripboardLogo className="h-10 w-10 text-brand-primary" />
+          <DripboardLogo className=" w-10 text-brand-primary" />
         </button>
 
         {/* Middle section with nav icons */}
@@ -264,7 +264,7 @@ export default function App() {
                   storageError={storageError}
                 />
               {showWardrobe && <Wardrobe avatars={avatars} clothing={clothing} onDataChange={refreshData} onClose={() => setShowWardrobe(false)} />}
-              {showLooks && <Looks outfits={outfits} avatars={avatars} clothing={clothing} onClose={() => setShowLooks(false)}/>}
+              {showLooks && <Looks outfits={outfits} avatars={avatars} clothing={clothing} onClose={() => setShowLooks(false)} onDataChange={refreshData} />}
             </main>
           </div>
       </div>
